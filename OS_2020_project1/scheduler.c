@@ -65,9 +65,10 @@ int RR(Process* job,int num_jobs, int now_running, int last_process, int time_sl
 	int current = last_process;
 	int i;
 	if(time_slice == 500 || now_running == -1){
+		//fprintf(stderr, "before: now_running = %d ", now_running);
 		while(count > 0){
 			if(job[(current + 1)%num_jobs].pid != -1){
-				next = job[(current + 1)%num_jobs].pid;
+				next = (current + 1)%num_jobs;
 				break;
 			}
 			current++;
@@ -75,6 +76,7 @@ int RR(Process* job,int num_jobs, int now_running, int last_process, int time_sl
 		}
 	}
 
+	//fprintf(stderr, "after: now_running = %d ", next);
 	return next;
 }
 
@@ -111,6 +113,7 @@ void scheduler(Process* job,int num_jobs,char* method){
 		for(int i = 0;i < num_jobs;i++){
 			if(job[i].ready_time == current_time){
 				job[i].pid = proc_exec(job[i]);
+				//fprintf(stderr," %d ",job[i].pid);
 			}
 		}
 
@@ -128,11 +131,11 @@ void scheduler(Process* job,int num_jobs,char* method){
 				next = PSJF(job, num_jobs, now_running);
 				break;
 			case 'R':
-				next = RR(job, num_jobs, now_running, last_process, time_slice);
-				time_slice--;
 				if(time_slice == 0 || now_running == -1){
 					time_slice = 500;
 				}
+				next = RR(job, num_jobs, now_running, last_process, time_slice);
+				time_slice--;
 				break;
 			default:
 				perror("Please enter the schedule strategy again!");
@@ -146,12 +149,14 @@ void scheduler(Process* job,int num_jobs,char* method){
 			proc_wakeup(job[next].pid, 99);
 			now_running = next;
 		}
+		//fprintf(stderr, "after: now_running = %d ", next);
 		TIME_UNIT();
 		current_time++;
 		if(now_running != -1){
 			job[now_running].exec_time--;
 		}
 		last_process = now_running;
+		//fprintf(stderr," %ld ", current_time);
 	}
 	return;
 }
