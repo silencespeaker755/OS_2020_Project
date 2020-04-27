@@ -63,9 +63,10 @@ int RR(Process* job,int num_jobs, int now_running, int last_process, int time_sl
 	int next = now_running;
 	int count = num_jobs;
 	int current = last_process;
+	int i;
 	if(time_slice == 500){
 		while(count > 0){
-			if(job[(current + 1)%num_jobs].pid != -1){
+			if((i = job[(current + 1)%num_jobs].pid) != -1){
 				next = i;
 				break;
 			}
@@ -75,9 +76,9 @@ int RR(Process* job,int num_jobs, int now_running, int last_process, int time_sl
 	}
 	count = num_jobs;
 	current = last_process;
-	else if(now_running == -1){
+	if(now_running == -1 && time_slice != 500){
 		while(count > 0){
-			if(job[(current + 1)%num_jobs].pid != -1){
+			if((i = job[(current + 1)%num_jobs].pid) != -1){
 				next = i;
 				break;
 			}
