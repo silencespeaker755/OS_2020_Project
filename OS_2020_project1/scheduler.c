@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -6,7 +7,7 @@
 #include<errno.h>
 #include<unistd.h>
 #include<limits.h>
-
+#include <sched.h>
 #include "process.h"
 #include "scheduler.h"
 
@@ -74,7 +75,12 @@ int RR(Process* job,int num_jobs, int now_running, int time_slice){
 
 void scheduler(Process* job,int num_jobs,char* method){
 	assign_proc_core(getpid(), 0);
-	proc_wakeup(getpid(), 99);
+	Sched_p sp;
+	sp.sched_priority = 99;
+	if(sched_setscheduler(getpid(), SCHED_FIFO, &sp) < 0){
+		perror("error : sched_setaffinity");
+		exit(-1);
+	}
 	/*Initialize*/
 	for(int i = 0;i < num_jobs;i++){
 		job[i].pid = -1;
@@ -132,7 +138,7 @@ void scheduler(Process* job,int num_jobs,char* method){
 			if(now_running != -1){
 				proc_out(job[now_running].pid);
 			}
-			proc_wakeup(job[next].pid, 50);
+			proc_wakeup(job[next].pid, 99);
 			now_running = next;
 		}
 		TIME_UNIT();

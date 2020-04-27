@@ -8,6 +8,8 @@ typedef struct process{
 	pid_t pid;
 }Process;
 
+typedef struct sched_param Sched_p;
+
 void TIME_UNIT(void);
 
 int assign_proc_core(pid_t pid, int core);

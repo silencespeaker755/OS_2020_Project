@@ -48,6 +48,16 @@ pid_t proc_exec(Process work){
 		exit(2);
 	}
 	else if(child_proc == 0){
+		// Child won't run before wake up.
+		
+		while(1){
+			Sched_p sp;
+			sched_getparam(getpid(), &sp);
+			if(sp.sched_priority == 99){
+				break;
+			}
+		}
+		
 		struct timespec start_time, end_time;
 		//start timer
 		int j = clock_gettime(CLOCK_REALTIME, &start_time);
@@ -78,7 +88,7 @@ pid_t proc_exec(Process work){
 	}
 	else{
 		proc_out(child_proc);
-		assign_proc_core(child_proc, CHILD_CORE);
+		//assign_proc_core(child_proc, CHILD_CORE);
 	}
 
 	return child_proc;
@@ -91,10 +101,12 @@ int proc_out(pid_t pid){
 		perror("error : sched_setaffinity");
 		exit(-1);
 	}
+	assign_proc_core(pid, 0);
 	return 0;
 }
 
 int proc_wakeup(pid_t pid, int priority){
+	assign_proc_core(pid, CHILD_CORE);
 	Sched_p sp;
 	sp.sched_priority = priority;
 	if(sched_setscheduler(pid, SCHED_FIFO, &sp) < 0){
