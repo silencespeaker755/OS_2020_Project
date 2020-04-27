@@ -1,6 +1,6 @@
 #!/bin/bash
 for scheduling in FIFO SJF PSJF RR; do
-	for i in {1..5};
+	for i in 1 2 3 4 5;
 	do
 		sudo dmesg --clear;
 		./OS_project < ./OS_PJ1_Test/${scheduling}_${i}.txt > outputs/${scheduling}_${i}_stdout.txt;
