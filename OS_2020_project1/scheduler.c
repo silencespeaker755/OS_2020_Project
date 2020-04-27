@@ -60,21 +60,29 @@ int PSJF(Process* job,int num_jobs, int now_running){
 	return next;
 }
 int RR(Process* job,int num_jobs, int now_running, int last_process, int time_slice){
-	int next = -1;
+	int next = now_running;
+	int count = num_jobs;
+	int current = last_process;
 	if(time_slice == 500){
-		for(int i = ((last_process + 1)%num_jobs);i < num_jobs;i++){
-			if(job[i].pid != -1){
+		while(count > 0){
+			if(job[(current + 1)%num_jobs].pid != -1){
 				next = i;
 				break;
 			}
+			current++;
+			count--;
 		}
 	}
+	count = num_jobs;
+	current = last_process;
 	else if(now_running == -1){
-		for(int i = ((last_process + 1)%num_jobs);i < num_jobs;i++){
-			if(job[i].pid != -1){
+		while(count > 0){
+			if(job[(current + 1)%num_jobs].pid != -1){
 				next = i;
 				break;
 			}
+			current++;
+			count--;
 		}
 	}
 
