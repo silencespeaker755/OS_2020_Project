@@ -6,6 +6,6 @@ int SJF(Process* job,int num_jobs, int now_running);
 
 int PSJF(Process* job,int num_jobs, int now_running);
 
-int RR(Process* job,int num_jobs, int now_running, int time_slice);
+int RR(Process* job,int num_jobs, int now_running, int last_process,int time_slice);
 
 void scheduler(Process* job,int num_jobs,char* method);

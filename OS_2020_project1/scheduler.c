@@ -59,10 +59,18 @@ int PSJF(Process* job,int num_jobs, int now_running){
 
 	return next;
 }
-int RR(Process* job,int num_jobs, int now_running, int time_slice){
+int RR(Process* job,int num_jobs, int now_running, int last_process, int time_slice){
 	int next = -1;
 	if(time_slice == 500){
-		for(int i = ((now_running + 1)%num_jobs);i < num_jobs;i++){
+		for(int i = ((last_process + 1)%num_jobs);i < num_jobs;i++){
+			if(job[i].pid != -1){
+				next = i;
+				break;
+			}
+		}
+	}
+	else if(now_running == -1){
+		for(int i = ((last_process + 1)%num_jobs);i < num_jobs;i++){
 			if(job[i].pid != -1){
 				next = i;
 				break;
@@ -86,7 +94,7 @@ void scheduler(Process* job,int num_jobs,char* method){
 		job[i].pid = -1;
 	}
 	unsigned long current_time = 0;
-	int finish_works_number = 0,now_running = -1;
+	int finish_works_number = 0,now_running = -1,last_process = -1;
 	int time_slice = 500;
 
 	/*Check which job is already finish in this round*/
@@ -123,9 +131,9 @@ void scheduler(Process* job,int num_jobs,char* method){
 				next = PSJF(job, num_jobs, now_running);
 				break;
 			case 'R':
-				next = RR(job, num_jobs, now_running, time_slice);
+				next = RR(job, num_jobs, now_running, last_process, time_slice);
 				time_slice--;
-				if(time_slice == 0){
+				if(time_slice == 0 || now_running == -1){
 					time_slice = 500;
 				}
 				break;
@@ -146,6 +154,7 @@ void scheduler(Process* job,int num_jobs,char* method){
 		if(now_running != -1){
 			job[now_running].exec_time--;
 		}
+		last_process = now_running;
 	}
 	return;
 }
