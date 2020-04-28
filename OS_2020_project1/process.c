@@ -12,6 +12,7 @@
 #include "process.h"
 #include "scheduler.h"
 
+#define sys_my_clock 333
 #define my_printk 334
 
 #define CHILD_CORE 1
@@ -60,18 +61,13 @@ pid_t proc_exec(Process work){
 		
 		struct timespec start_time, end_time;
 		//start timer
-		int j = clock_gettime(CLOCK_REALTIME, &start_time);
-		if(j < 0){
-			perror("clock_gettime fail!");
-		}
+		syscall(sys_my_clock, &start_time);
+
 		while(work.exec_time > 0){
 			TIME_UNIT();
 			work.exec_time--;
 		}
-		j = clock_gettime(CLOCK_REALTIME, &end_time);
-		if(j < 0){
-			perror("clock_gettime fail!");
-		}
+		syscall(sys_my_clock, &end_time);
 		//end timer
 
 		//generate dmsg

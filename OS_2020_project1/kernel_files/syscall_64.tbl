@@ -339,6 +339,7 @@
 330	common	pkey_alloc		sys_pkey_alloc
 331	common	pkey_free		sys_pkey_free
 332	common	statx			sys_statx
+333 common 	gettimes 		sys_my_clock
 334     common  my_printk               sys_my_printk
 
 #
