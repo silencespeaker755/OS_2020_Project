@@ -11,6 +11,22 @@
 #include "process.h"
 #include "scheduler.h"
 
+#define MM 32
+
+int queue_pop(int *queue, int* start, int* end){
+	int front = -1;
+	if(*start != *end){
+		front = queue[*start];
+		*start = ((*start) + 1) % MM;
+	}
+	return front;
+}
+void queue_push(int *queue, int k, int* start, int* end){
+	queue[(*end) % MM] = k;
+	*end = ((*end) + 1) % MM;
+	return;
+}
+
 
 int FIFO(Process* job, int num_jobs, int now_running){
 	int next = -1;
@@ -59,20 +75,17 @@ int PSJF(Process* job,int num_jobs, int now_running){
 
 	return next;
 }
-int RR(Process* job,int num_jobs, int now_running, int last_process, int time_slice){
+int RR(int *queue, Process* job, int now_running, int* start, int* end, int time_slice){
 	int next = now_running;
-	int count = num_jobs;
-	int current = last_process;
 	int i;
 	if(time_slice == 500 || now_running == -1){
 		//fprintf(stderr, "before: now_running = %d ", now_running);
-		while(count > 0){
-			if(job[(current + 1)%num_jobs].pid != -1){
-				next = (current + 1)%num_jobs;
-				break;
+		if((i = queue_pop(queue, start, end)) != -1){
+			next = i;
+			if(now_running != -1){
+				queue_push(queue, now_running, start, end);
 			}
-			current++;
-			count--;
+			//fprintf(stderr,"RR next = %d\n", next);
 		}
 	}
 
@@ -94,7 +107,11 @@ void scheduler(Process* job,int num_jobs,char* method){
 	}
 	unsigned long current_time = 0;
 	int finish_works_number = 0,now_running = -1,last_process = -1;
-	int time_slice = 500;
+	int time_slice = 500, start = 0, end = 0;
+	int *queue;
+	/*Use a queue*/
+	if(method[0] == 'R')
+		queue = (int*) malloc(MM * sizeof(int));
 
 	/*Check which job is already finish in this round*/
 	while(1){
@@ -113,6 +130,10 @@ void scheduler(Process* job,int num_jobs,char* method){
 		for(int i = 0;i < num_jobs;i++){
 			if(job[i].ready_time == current_time){
 				job[i].pid = proc_exec(job[i]);
+				if(method[0] == 'R'){
+					queue_push(queue, i, &start, &end);
+					//fprintf(stderr, "push = %d\n", i);
+				}
 				//fprintf(stderr," %d ",job[i].pid);
 			}
 		}
@@ -134,7 +155,7 @@ void scheduler(Process* job,int num_jobs,char* method){
 				if(time_slice == 0 || now_running == -1){
 					time_slice = 500;
 				}
-				next = RR(job, num_jobs, now_running, last_process, time_slice);
+				next = RR(queue, job, now_running, &start, &end, time_slice);
 				time_slice--;
 				break;
 			default:
@@ -155,7 +176,6 @@ void scheduler(Process* job,int num_jobs,char* method){
 		if(now_running != -1){
 			job[now_running].exec_time--;
 		}
-		last_process = now_running;
 		//fprintf(stderr," %ld ", current_time);
 	}
 	return;

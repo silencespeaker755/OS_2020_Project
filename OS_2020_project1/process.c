@@ -61,13 +61,14 @@ pid_t proc_exec(Process work){
 		
 		struct timespec start_time, end_time;
 		//start timer
-		syscall(sys_my_clock, &start_time);
+		int t = clock_gettime(CLOCK_REALTIME, &start_time);
+		//syscall(sys_my_clock, &start_time);
 
 		while(work.exec_time > 0){
 			TIME_UNIT();
 			work.exec_time--;
 		}
-		syscall(sys_my_clock, &end_time);
+		t = clock_gettime(CLOCK_REALTIME, &end_time);
 		//end timer
 
 		//generate dmsg
